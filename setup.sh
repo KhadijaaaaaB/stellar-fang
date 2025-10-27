@@ -138,9 +138,9 @@ setup_game() {
     chmod 000 "$SPACESHIP_DIR/Orbiter/Safety_Hatches/initiate_bailout.sh"
 
     # 7. Set the player's starting location
-    cd "$SPACESHIP_DIR"
 
     echo ">>> Spaceship ready."
+
 }
 
 setup_game

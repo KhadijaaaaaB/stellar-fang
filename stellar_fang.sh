@@ -32,15 +32,15 @@ export DIFFICULTY
 
 # --- Main Game ---
 clear
-setup_game # This function is now in setup.sh
-start_timer # This function is now in timer.sh
+setup_game 
+start_timer 
 
 # --- Introduction ---
 echo "=========================================="
 echo "      Welcome to the Stellar Fang         "
 echo "=========================================="
 echo "ALERT: A system is offline! You have 20 minutes to identify and restore it."
-echo "You are starting in the main hub of the ship: $SPACESHIP_DIR"
+echo "You may enter the main hub of the ship: $SPACESHIP_DIR"
 echo "Type 'help' to see authorized commands."
 echo ""
 
