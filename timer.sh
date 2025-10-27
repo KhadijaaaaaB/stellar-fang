@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # --- timer.sh for Stellar Fang (with difficulty) ---
 

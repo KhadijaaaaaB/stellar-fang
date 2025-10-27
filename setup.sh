@@ -1,28 +1,38 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # --- setup.sh for Stellar Fang ---
 # This script builds the game world from scratch for each session.
 
 # --- Game Configuration ---
 # Export variables so they can be used by the main script
-export SPACESHIP_DIR="/tmp/stellar_fang_ship"
-export TIME_UP_FILE="/tmp/stellar_fang_time_up"
+export SPACESHIP_DIR="stellar_fang_ship"
+export TIME_UP_FILE="stellar_fang_time_up"
+
+source cleanup.sh
 
 # The four parts that can be randomly damaged
 POSSIBLE_DAMAGED_PARTS=(
-    "Nose_Reaction_Control_System"
-    "Main_Engine_System"
+    "Orbiter/Nose_Reaction_Control_System"
+    "Main_Engine"
     "External_Tank/Liquid_Oxygen_Tank"
-    "Orbital_Maneuvering_System"
+    "OMS"
 )
 
 # The full directory structure of the ship
+SHIP_CATEGORIES=(
+    "External_Tank"
+    "SRB" #Solid_Rocket_Booster
+    "Orbiter"
+    "OMS" #Orbital Maneuvering System
+    "Main_Engine"
+)
+
 ALL_SHIP_PARTS=(
     "External_Tank/Liquid_Oxygen_Tank"
     "External_Tank/Safety_Valve"
     "External_Tank/Liquid_Hydrogen_Tank"
-    "Solid_Rocket_Booster/Reusable_Outer_Casing"
-    "Solid_Rocket_Booster/Solid_Propellant"
+    "SRB/Reusable_Outer_Casing"
+    "SRB/Solid_Propellant"
     "Orbiter/Delta_Wing"
     "Orbiter/Safety_Hatches"
     "Orbiter/Nose_Reaction_Control_System"
@@ -30,20 +40,29 @@ ALL_SHIP_PARTS=(
     "Orbiter/Cargo_Bay_Doors"
     "Orbiter/Elevons"
     "Orbiter/Body_Flap"
-    "Orbital_Maneuvering_System/Booster_Nozzle"
-    "Main_Engine_System"
+    "OMS/Booster_Nozzle"
 )
 
 # --- Setup Function ---
 setup_game() {
-    # 1. Clean up any previous game session to ensure a fresh start
-    rm -rf "$SPACESHIP_DIR"
-    rm -f "$TIME_UP_FILE"
-    
+    cleanup_game
+
+    echo ">>> Loading Spaceship..."
+
+    # 1. Create spaceship folder
+    mkdir "$SPACESHIP_DIR"
+
     # 2. Build the ship's directory structure
+    for category in "${SHIP_CATEGORIES[@]}"; do
+        mkdir -p "$SPACESHIP_DIR/$category"
+    done
+
     for part in "${ALL_SHIP_PARTS[@]}"; do
         mkdir -p "$SPACESHIP_DIR/$part"
     done
+
+    mkdir -p "$SPACESHIP_DIR/storage/archives"
+
     mkdir -p "$SPACESHIP_DIR/storage/hidden_depot"
     mkdir -p "$SPACESHIP_DIR/storage/avionics/RCSBACKUPMODULES"
     mkdir -p "$SPACESHIP_DIR/storage/propulsion/safemode"
@@ -120,4 +139,8 @@ setup_game() {
 
     # 7. Set the player's starting location
     cd "$SPACESHIP_DIR"
+
+    echo ">>> Spaceship ready."
 }
+
+setup_game

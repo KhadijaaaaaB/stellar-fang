@@ -1,0 +1,53 @@
+Authorized Commands
+
+Use the following commands to interact with the ship's systems.
+
+    ls - List Contents
+
+        Lists the files and directories in your current location.
+        Usage: ls [directory]
+
+    cd - Change Directory
+
+        Navigates between directories (the ship's systems).
+        Usage: cd <directory_name> or cd .. to go up one level.
+
+    cat - View File Contents
+
+        Displays the content of a file. Use this to read status reports and log files.
+        Usage: cat <filename>
+
+    grep - Search Text
+
+        Searches for specific text inside a file. Useful for finding keywords in logs.
+        Usage: grep "<text_to_find>" <filename>
+
+    find - Find Files
+
+        Searches for files by name within the ship's systems.
+        Usage: find . -name "<filename>"
+
+    mkdir - Make Directory
+
+        Creates a new directory. You can use this to organize your findings.
+        Usage: mkdir <directory_name>
+
+    mv - Move or Rename
+
+        Moves or renames a file or directory.
+        Usage: mv <source> <destination>
+
+    chmod - Change Permissions
+
+        Changes the access permissions of a file. You may need this to run a locked repair script.
+        Usage: chmod <permissions> <filename> (e.g., chmod +x script.sh)
+
+    ps - List Processes
+
+        Lists currently running processes. Useful for monitoring ship system diagnostics.
+        Usage: ps T 
+
+    kill - Terminate Process
+    
+        Stops a running process identified by its Process ID (PID). Use with caution.
+        Usage: kill <PID>
