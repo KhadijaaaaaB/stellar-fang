@@ -90,4 +90,4 @@ while true; do
 done
 
 # --- Cleanup ---
-cleanup_game # This function is in cleanup.sh
+cleanup_game 

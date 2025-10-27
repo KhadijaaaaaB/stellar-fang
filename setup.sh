@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 # --- setup.sh for Stellar Fang ---
 # This script builds the game world from scratch for each session.
 
@@ -9,6 +11,7 @@ export SPACESHIP_DIR="stellar_fang_ship"
 export TIME_UP_FILE="stellar_fang_time_up"
 
 source cleanup.sh
+
 
 # The four parts that can be randomly damaged
 POSSIBLE_DAMAGED_PARTS=(
@@ -52,6 +55,12 @@ setup_game() {
     # 1. Create spaceship folder
     mkdir "$SPACESHIP_DIR"
 
+    #Create Emergency System Repair Guide
+    touch "EMERGENCY_REPAIR_GUIDE" 
+    echo "If parts are broken, you can find replacement in storage."> "EMERGENCY_REPAIR_GUIDE"
+    echo "You need to move the needed parts to the location of the broken part of the spaceship." >> "EMERGENCY_REPAIR_GUIDE"
+
+
     # 2. Build the ship's directory structure
     for category in "${SHIP_CATEGORIES[@]}"; do
         mkdir -p "$SPACESHIP_DIR/$category"
@@ -70,7 +79,13 @@ setup_game() {
     mkdir -p "$SPACESHIP_DIR/storage/navdata"
 
     ## create parts for repair
-    # Nose RCS Parts
+    # Define repair component lists
+    RCS_repair=("rcscontroller.dll" "thrustercalibration.dat" "yawcontrolmodule.sys")
+    MainEngine_repair=("enginecontrollerfirmware.bin" "fuelflowtables.xml" "ignitionsequence.sh")
+    ExternalTank_repair=("pressuresensordriver.sys" "tankintegritymonitor.cfg" "LOXvalvecontrol.dat")
+    OMS_repair=("omstargetingdata.nav" "deorbitburnsequence.script" "enginegimbalconfig.ini")
+
+    # Nose Reaction Control System (RCS) Parts
     touch $SPACESHIP_DIR/storage/avionics/RCSBACKUPMODULES/rcscontroller.dll
     touch $SPACESHIP_DIR/storage/avionics/RCSBACKUPMODULES/thrustercalibration.dat
     touch $SPACESHIP_DIR/storage/avionics/RCSBACKUPMODULES/yawcontrolmodule.sys
@@ -98,21 +113,40 @@ setup_game() {
     #    This loop creates a "status.txt" in each of the four possible failure points.
     for part in "${POSSIBLE_DAMAGED_PARTS[@]}"; do
         # Check if the current part in the loop is the one we selected as damaged
-        if [ "$part" == "$DAMAGED_PART" ]; then
-            # This is the broken part. Create the error message and the first clue.
-            echo "ALERT: Critical failure detected in '$part' system." > "$SPACESHIP_DIR/$part/status.txt"
-            echo "|| /!\ Please refer to the Emergency System Repair Guide /!\ || " > "$SPACESHIP_DIR/$part/status.txt"
-            echo "Diagnostic logs suggest the repair manifest is in 'storage'." >> "$SPACESHIP_DIR/$part/status.txt"
-        else
-            # This part is fine. Create a standard "OK" status file to act as a red herring.
-            echo "System Status: OK. All systems nominal." > "$SPACESHIP_DIR/$part/status.txt"
-        fi
-    done
+        echo "System Status: OK. All systems nominal." > "$SPACESHIP_DIR/$part/status.txt"
+        # This is the broken part. Create the error message and the first clue.
+        
+        STATUS_FILE="$SPACESHIP_DIR/$DAMAGED_PART/status.txt"
+        echo "ALERT: Critical failure detected in '$DAMAGED_PART'." > "$STATUS_FILE"
+        echo "|| /!\ Please refer to the Emergency System Repair Guide /!\ || " >> "$STATUS_FILE"
+        echo "" >> "$STATUS_FILE"
+        echo "Parts requiring replacement:" >> "$STATUS_FILE"
 
-    # 5. Create the main puzzle files
-    # Clue #1: The initial status file in the broken part's directory
-    echo "ALERT: Critical failure detected in '$DAMAGED_PART'." > "$SPACESHIP_DIR/$DAMAGED_PART/status.txt"
-    echo "Diagnostic logs suggest the repair manifest is in 'storage/archives'." >> "$SPACESHIP_DIR/$DAMAGED_PART/status.txt"
+        # Determine which part failed and list missing components
+        case "$part" in
+            "Orbiter/Nose_Reaction_Control_System")
+                for file in "${RCS_repair[@]}"; do
+                    echo "- $file" >> "$STATUS_FILE"
+                done
+                ;;
+            "Main_Engine")
+                for file in "${MainEngine_repair[@]}"; do
+                    echo "- $file" >> "$STATUS_FILE"
+                done
+                ;;
+            "External_Tank/Liquid_Oxygen_Tank")
+                for file in "${ExternalTank_repair[@]}"; do
+                    echo "- $file" >> "$STATUS_FILE"
+                done
+                ;;
+            "OMS")
+                for file in "${OMS_repair[@]}"; do
+                    echo "- $file" >> "$STATUS_FILE"
+                done
+                ;;
+        esac
+
+    done
 
     # Clue #2: The manifest file leading to the repair kit
     echo "Repair kit location logged as: $SPACESHIP_DIR/storage/hidden_depot" > "$SPACESHIP_DIR/storage/archives/manifesto.log"
