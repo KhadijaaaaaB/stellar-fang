@@ -3,7 +3,7 @@
 
 ## About The Project
 
-Stellar Fang is a termina-based game that simulates a high-stakes scenario aboard a spaceship. The player assumes the role of the sole conscious astronaut on the V.S.S. Stellar Fang after a critical system failure. The game is a race against time, challenging the player to diagnose and solve the problem using Bash commands in a simulated terminal before a catastrophic failure destroys the ship.
+Stellar Fang is a terminal-based game that simulates a high-stakes scenario aboard a spaceship (the Stellar Fang). The player assumes the role of the astronaut on the V.S.S. Stellar Fang after a critical system failure. The game is a race against time, challenging the player to diagnose and solve the problem using Bash commands in a simulated terminal before a catastrophic failure destroys the ship.
 
 ## Gameplay
 
@@ -16,11 +16,10 @@ Your primary goal is to identify the damaged ship component, find the necessary 
 The game unfolds through a series of logical steps that require you to use your knowledge of terminal commands :
 
 1. **Diagnosis:** Begin by exploring the ship's file system using `ls` and `cd`. Check `status.txt` files in different system directories to find the one reporting a critical error.
-2. **Investigation:** The error message will guide you to a log file, `manifesto.log`, located in the ship's archives.
-3. **Discovery:** Use `find` or `grep` to locate the `manifesto.log` file. Reading it will reveal the location of a hidden repair kit.
-4. **The Puzzle:** You will find that the repair script, `repairprotocol.sh`, is locked due to file permissions (`chmod 000`), simulating a software virus or lockout.
-5. **Solution:** Use the `chmod` command to make the repair script executable.
-6. **Resolution:** Execute the script (`./repairprotocol.sh`) to repair the ship and win the game.
+2. **Investigation:** The error message will tell you which components of the broken system need to be replaced. These components are located in the ship's archives. You have to follow the EMERGENCY_REPAIR_GUIDE to repair the parts.
+3. **The Puzzle:** Oh no... a virus is preventing you from repairing the spaceship. Identify it, then kill it! 
+4. **Repair the ship:** You will find that the repair script, `repairprotocol.sh`, is locked due to file permissions (`chmod 000`), simulating a software virus or lockout.
+5. **Resolution:** Execute the script (`./repairprotocol.sh`) to repair the ship and win the game.
 
 ### Outcomes
 

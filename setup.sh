@@ -56,9 +56,10 @@ setup_game() {
     mkdir "$SPACESHIP_DIR"
 
     #Create Emergency System Repair Guide
-    touch "EMERGENCY_REPAIR_GUIDE" 
-    echo "If parts are broken, you can find replacement in storage."> "EMERGENCY_REPAIR_GUIDE"
-    echo "You need to move the needed parts to the location of the broken part of the spaceship." >> "EMERGENCY_REPAIR_GUIDE"
+    touch "$SPACESHIP_DIR/EMERGENCY_REPAIR_GUIDE" 
+    echo "If parts are broken, you can find replacement in storage."> "$SPACESHIP_DIR/EMERGENCY_REPAIR_GUIDE" 
+    echo "You need to move the needed parts to the location of the broken part of the spaceship." >> "$SPACESHIP_DIR/EMERGENCY_REPAIR_GUIDE" 
+    echo "The replacement parts shall be stored in a directory, called for_repair" >> "$SPACESHIP_DIR/EMERGENCY_REPAIR_GUIDE" 
 
 
     # 2. Build the ship's directory structure
