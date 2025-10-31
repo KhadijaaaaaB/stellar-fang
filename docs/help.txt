@@ -51,3 +51,5 @@ Use the following commands to interact with the ship's systems.
     
         Stops a running process identified by its Process ID (PID). Use with caution.
         Usage: kill <PID>
+
+    time - Show remaining time for the mission

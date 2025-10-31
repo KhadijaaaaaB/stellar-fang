@@ -28,10 +28,15 @@ done
 
 # Export the chosen difficulty so timer.sh can use it
 export DIFFICULTY
-
-
+echo $$ > sf.pid
 # --- Main Game ---
 clear
+
+if [ -f timer.pid ]; then
+  kill $(cat timer.pid) 2>/dev/null || true
+  rm -f timer.pid
+fi
+
 setup_game 
 start_timer 
 
@@ -45,43 +50,70 @@ echo "Type 'help' to see authorized commands."
 echo ""
 
 
+# Signal handler for TIME UP
+handle_time_up() {
+    echo -e "\n\n*** TIME'S UP! ***"
+    echo "The ship's systems have failed completely. Mission failed."
+    cleanup_game
+    exit 0
+}
+
+# Signal handler for WIN
+handle_win() {
+    echo -e "\n\n*** CONGRATULATIONS! ***"
+    echo "You successfully repaired the $DAMAGED_PART. The ship is safe!"
+    cleanup_game
+    exit 0
+}
+
+# Signal handler for BAILOUT
+handle_bailout() {
+    echo -e "\n\n*** BAIL-OUT SUCCESSFUL ***"
+    echo "You escaped the ship, but the Stellar Fang is lost. You survived, but the mission failed."
+    cleanup_game
+    exit 0
+}
+
+# Set traps for user-defined signals
+trap 'handle_time_up' USR1
+trap 'handle_win' USR2
+trap 'handle_bailout' TERM
+
 # --- Main Game Loop ---
 while true; do
-    # Check for loss condition (timer expired)
-    if [ -f "$TIME_UP_FILE" ]; then
-        echo -e "\n\n*** TIME'S UP! ***"
-        echo "The ship's systems have failed completely. Mission failed."
-        break
-    fi
-    
-    # Check for win condition (part repaired)
-    if [ -f "$SPACESHIP_DIR/$DAMAGED_PART/repaired" ]; then
-        echo -e "\n\n*** CONGRATULATIONS! ***"
-        echo "You successfully repaired the $DAMAGED_PART. The ship is safe!"
-        break
-    fi
-    
-    # Check for bailout win condition
-    if [ -f "$SPACESHIP_DIR/Orbiter/Safety_Hatches/bailed_out" ]; then
-        echo -e "\n\n*** BAIL-OUT SUCCESSFUL ***"
-        echo "You escaped the ship, but the Stellar Fang is lost. You survived, but the mission failed."
-        break
-    fi
-
     # Read player command
-    read -p "$PROMPT" cmd args
+    read -t 200 -p $'\033[32m> \033[0m' cmd args
+    if [[ $? -ne 0 ]]; then
+      # No input received, loop continues, allows signal handling
+      continue
+    fi
 
     case "$cmd" in
-        ls|cd|cat|grep|find|mkdir|mv|chm|ps|kill)
+        ls|cd|cat|grep|find|mkdir|mv|chm|ps)
             # Execute the command safely
             $cmd $args
             ;;
         help)
+            echo -e "\033[36mShowing help information...\033[0m"
             cat docs/help.txt
             ;;
         exit)
             echo "Aborting mission... Goodbye."
             break
+            ;;
+        kill)
+            kill $args 
+            ;;
+        time)
+            CURRENT_TIME=$(date +%s)
+            ELAPSED_TIME=$((CURRENT_TIME - START_TIME))
+            TIME_LEFT=$((GAME_DURATION - ELAPSED_TIME))
+
+            minutes=$((TIME_LEFT / 60))
+            seconds=$((TIME_LEFT % 60))
+            TIME="${minutes}m ${seconds}s"
+
+            echo -e "\033[33mYou still have $TIME left\033[0m"
             ;;
         *)
             echo "Error: Command '$cmd' not recognized. Type 'help'."
@@ -91,3 +123,4 @@ done
 
 # --- Cleanup ---
 cleanup_game 
+pkill -9 -f "stellar_fang.sh" > /dev/null 2>&1 || true

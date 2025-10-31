@@ -49,7 +49,7 @@ ALL_SHIP_PARTS=(
 # --- Setup Function ---
 setup_game() {
     cleanup_game
-
+    sh ship_sync.sh &
     echo ">>> Loading Spaceship..."
 
     # 1. Create spaceship folder

@@ -70,6 +70,7 @@ Run the game by executing the main script. You can specify a difficulty level us
 * **Easy Mode:** 30-minute timer.
 * **Normal Mode:** 20-minute timer. (default)
 * **Hard Mode:** 10-minute timer.
+The player can check the timer any time by typing `time`
 
 To see a list of authorized commands and a brief explanation of the game's objective, type `help`.
 
