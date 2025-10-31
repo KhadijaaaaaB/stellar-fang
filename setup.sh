@@ -124,7 +124,7 @@ setup_game() {
         echo "Parts requiring replacement:" >> "$STATUS_FILE"
 
         # Determine which part failed and list missing components
-        case "$part" in
+        case "$DAMAGED_PART" in
             "Orbiter/Nose_Reaction_Control_System")
                 for file in "${RCS_repair[@]}"; do
                     echo "- $file" >> "$STATUS_FILE"
@@ -177,5 +177,3 @@ setup_game() {
     echo ">>> Spaceship ready."
 
 }
-
-setup_game

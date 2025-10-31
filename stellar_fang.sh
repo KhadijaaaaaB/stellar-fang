@@ -81,45 +81,46 @@ trap 'handle_bailout' TERM
 
 # --- Main Game Loop ---
 while true; do
-    # Read player command
-    read -t 200 -p $'\033[32m> \033[0m' cmd args
-    if [[ $? -ne 0 ]]; then
-      # No input received, loop continues, allows signal handling
-      continue
+    # Read the full command line input with prompt, allow line editing
+    read -e -p "\033[32m> \033[0m" user_input
+
+    # Skip empty input
+    if [ -z "$user_input" ]; then
+        continue
     fi
 
-    case "$cmd" in
-        ls|cd|cat|grep|find|mkdir|mv|chm|ps)
-            # Execute the command safely
-            $cmd $args
+    # Handle special commands manually before eval if needed
+    case "$user_input" in
+        exit)
+            echo "Aborting mission... Goodbye."
+            break
             ;;
         help)
             echo -e "\033[36mShowing help information...\033[0m"
             cat docs/help.txt
             ;;
-        exit)
-            echo "Aborting mission... Goodbye."
-            break
-            ;;
-        kill)
-            kill $args 
-            ;;
         time)
             CURRENT_TIME=$(date +%s)
             ELAPSED_TIME=$((CURRENT_TIME - START_TIME))
             TIME_LEFT=$((GAME_DURATION - ELAPSED_TIME))
-
             minutes=$((TIME_LEFT / 60))
             seconds=$((TIME_LEFT % 60))
             TIME="${minutes}m ${seconds}s"
-
             echo -e "\033[33mYou still have $TIME left\033[0m"
             ;;
+        kill*)
+            # Extract PID(s)
+            pid="${user_input#kill }"
+            kill $pid
+            ;;
         *)
-            echo "Error: Command '$cmd' not recognized. Type 'help'."
+            # For all other commands, execute with eval to preserve quotes and args
+            eval "$user_input" || true
             ;;
     esac
 done
+
+
 
 # --- Cleanup ---
 cleanup_game 

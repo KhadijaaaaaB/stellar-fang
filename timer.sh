@@ -20,7 +20,7 @@ start_timer() {
             echo "Difficulty set to Hard. You have 10 minutes. Good luck."
             ;;
         *) # Default to normal for any other input
-            GAME_DURATION=5 # 20 minutes
+            GAME_DURATION=1200 # 20 minutes
             echo "Difficulty set to Normal. You have 20 minutes."
             ;;
     esac
@@ -34,7 +34,7 @@ start_timer() {
     fi
     
     # Run the timer in the background. When it finishes, it creates the time-up file.
-    (sleep $GAME_DURATION && touch "$TIME_UP_FILE" && kill -USR1 "$$") &   
+    (sleep $GAME_DURATION && touch "$TIME_UP_FILE" && kill -USR1 "$(cat sf.pid)") &   
     
     # Export the timer's Process ID so the main script can stop it if needed.
     TIMER_PID=$!
