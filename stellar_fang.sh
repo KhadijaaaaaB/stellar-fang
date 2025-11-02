@@ -3,7 +3,7 @@
 # --- Main Game Script: stellar_fang.sh ---
 
 # Get the absolute path of the directory where this script is located
-SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+export SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 # Source the configuration and helper scripts
 source setup.sh

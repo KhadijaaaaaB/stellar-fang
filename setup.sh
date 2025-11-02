@@ -52,6 +52,44 @@ setup_game() {
     sh ship_sync.sh &
     sync_pid=$!
     echo $sync_pid > docs/ship_sync.pid
+    (
+    # This loop runs as long as the process with $sync_pid is alive
+    while ps -p $sync_pid > /dev/null; do
+        sleep 1
+    done
+
+    # --- This code runs ONLY AFTER ship_sync.sh has been killed ---
+    
+    # Notify the user that something has happened
+    echo -e "..\n..\n\033[1;31mALERT: VIRUS KILLED! The Emergency Repair Protocol is now available.\033[0m"
+
+    # Create and populate the repair_protocol.sh file in the main ship directory
+    cat > "$SCRIPT_DIR/repair_protocol.sh" << EOF
+#!/usr/bin/env bash
+
+source setup.sh
+
+# Run part check script
+./check_parts.sh
+result=\$?
+
+if [ \$result -eq 0 ]; then
+    echo "Repair parts validated. Repairing spaceship..."
+
+    # Example repair logic: mark as repaired by touching a file
+    touch "\$SPACESHIP_DIR/\$DAMAGED_PART/repaired"
+
+    # Send USR2 (win) signal to main game script
+    kill -USR2 "\$(cat docs/sf.pid)"
+else    
+    echo "Repair parts missing or invalid. Cannot proceed with repair."
+    exit 1
+fi
+
+EOF
+
+) &  # The final '&' runs this entire watcher block in the background.
+
     echo ">>> Loading Spaceship..."
 
     # 1. Create spaceship folder
@@ -69,7 +107,7 @@ Repair Procedure:
     2.  **Prepare for Repair:** Move the required spare parts to the repair location. The repair location is a folder named \`for_repair\`, which is inside the directory of the damaged system.
     *Example: If the \`Nose_Reaction_Control_System\` is broken, move its spare parts to the \`stellar_fang_ship/Nose_Reaction_Control_System/for_repair/\` directory.
     
-    3.  **Execute Repair Protocol:** Once all parts are in place, run the repair script located in \`storage/hidden_depot/repair_protocol.sh\`. This script will simulate the repair process.
+    3.  **Execute Repair Protocol:** Once all parts are in place, run the repair script located in \`repair_protocol.sh\`. This script will initiate the repair process.
     *Note: Ensure you have the necessary permissions to execute the repair script. If you encounter permission issues, you may need to adjust the file permissions using \`chmod\`.
 ================================================================
 EOF
