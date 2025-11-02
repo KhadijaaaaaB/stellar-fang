@@ -50,17 +50,29 @@ ALL_SHIP_PARTS=(
 setup_game() {
     cleanup_game
     sh ship_sync.sh &
+    sync_pid=$!
+    echo $sync_pid > docs/ship_sync.pid
     echo ">>> Loading Spaceship..."
 
     # 1. Create spaceship folder
     mkdir "$SPACESHIP_DIR"
 
     #Create Emergency System Repair Guide
-    touch "$SPACESHIP_DIR/EMERGENCY_REPAIR_GUIDE" 
-    echo "If parts are broken, you can find replacement in storage."> "$SPACESHIP_DIR/EMERGENCY_REPAIR_GUIDE" 
-    echo "You need to move the needed parts to the location of the broken part of the spaceship." >> "$SPACESHIP_DIR/EMERGENCY_REPAIR_GUIDE" 
-    echo "The replacement parts shall be stored in a directory, called for_repair" >> "$SPACESHIP_DIR/EMERGENCY_REPAIR_GUIDE" 
+    # Create Emergency System Repair Guide with clearer instructions
+    cat > "$SPACESHIP_DIR/EMERGENCY_REPAIR_GUIDE" << EOF 
+================= EMERGENCY SYSTEM REPAIR GUIDE =================
+Repair Procedure:
 
+    1.  **Locate Replacement Parts:** Find the necessary spare parts for the damaged system. All spares are located in the \`storage\` directory.
+    *Note: Each system has its own subdirectory within \`storage\` where its spare parts are stored. It might be helpful to use \`find\` or \`grep\` commands to locate specific files.
+    
+    2.  **Prepare for Repair:** Move the required spare parts to the repair location. The repair location is a folder named \`for_repair\`, which is inside the directory of the damaged system.
+    *Example: If the \`Nose_Reaction_Control_System\` is broken, move its spare parts to the \`stellar_fang_ship/Nose_Reaction_Control_System/for_repair/\` directory.
+    
+    3.  **Execute Repair Protocol:** Once all parts are in place, run the repair script located in \`storage/hidden_depot/repair_protocol.sh\`. This script will simulate the repair process.
+    *Note: Ensure you have the necessary permissions to execute the repair script. If you encounter permission issues, you may need to adjust the file permissions using \`chmod\`.
+================================================================
+EOF
 
     # 2. Build the ship's directory structure
     for category in "${SHIP_CATEGORIES[@]}"; do

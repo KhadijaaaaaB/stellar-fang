@@ -2,6 +2,9 @@
 
 # --- Main Game Script: stellar_fang.sh ---
 
+# Get the absolute path of the directory where this script is located
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
 # Source the configuration and helper scripts
 source setup.sh
 source timer.sh
@@ -28,13 +31,13 @@ done
 
 # Export the chosen difficulty so timer.sh can use it
 export DIFFICULTY
-echo $$ > sf.pid
+echo $$ > docs/sf.pid
 # --- Main Game ---
 clear
 
-if [ -f timer.pid ]; then
-  kill $(cat timer.pid) 2>/dev/null || true
-  rm -f timer.pid
+if [ -f docs/timer.pid ]; then
+  kill $(cat docs/timer.pid) 2>/dev/null || true
+  rm -f docs/timer.pid
 fi
 
 setup_game 
@@ -82,18 +85,27 @@ trap 'handle_bailout' TERM
 # --- Main Game Loop ---
 while true; do
     # Read the full command line input with prompt, allow line editing
-    read -e -p "\033[32m> \033[0m" user_input
+    read -e -p $'\033[32m> \033[0m' user_input
 
     # Skip empty input
     if [ -z "$user_input" ]; then
         continue
     fi
 
+    init_pwd=$(pwd)
+    
     # Handle special commands manually before eval if needed
     case "$user_input" in
         exit)
-            echo "Aborting mission... Goodbye."
-            break
+            current_dir=$(pwd)
+
+            # Check if the current directory is EXACTLY the script's home directory
+            if [[ "$current_dir" == "$SCRIPT_DIR" ]]; then
+                echo "Aborting mission... Goodbye."
+                break
+            else
+                echo -e "\033[1;31mError: You can only exit the game from the main hub ('$SCRIPT_DIR').\033[0m"
+            fi
             ;;
         help)
             echo -e "\033[36mShowing help information...\033[0m"
@@ -107,6 +119,10 @@ while true; do
             seconds=$((TIME_LEFT % 60))
             TIME="${minutes}m ${seconds}s"
             echo -e "\033[33mYou still have $TIME left\033[0m"
+            ;;
+        ls) 
+            # Custom ls to color output
+            command ls --color=auto
             ;;
         kill*)
             # Extract PID(s)

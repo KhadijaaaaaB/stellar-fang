@@ -13,7 +13,7 @@ if [ $result -eq 0 ]; then
     touch "$SPACESHIP_DIR/$DAMAGED_PART/repaired"
 
     # Send USR2 (win) signal to main game script
-    kill -USR2 "$(cat sf.pid)"
+    kill -USR2 "$(cat docs/sf.pid)"
 else    
     echo "Repair parts missing or invalid. Cannot proceed with repair."
     exit 1

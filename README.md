@@ -15,7 +15,8 @@ Your primary goal is to identify the damaged ship component, find the necessary 
 
 The game unfolds through a series of logical steps that require you to use your knowledge of terminal commands :
 
-1. **Diagnosis:** Begin by exploring the ship's file system using `ls` and `cd`. Check `status.txt` files in different system directories to find the one reporting a critical error.
+1. **Diagnosis:** Begin by exploring the ship's file system using `ls` and `cd`. 
+There are in total 4 `status.txt` files in different system directories. Find and read them to find the one reporting a critical error.
 2. **Investigation:** The error message will tell you which components of the broken system need to be replaced. These components are located in the ship's archives. You have to follow the EMERGENCY_REPAIR_GUIDE to repair the parts.
 3. **The Puzzle:** Oh no... a virus is preventing you from repairing the spaceship. Identify it, then kill it! 
 4. **Repair the ship:** You will find that the repair script, `repairprotocol.sh`, is locked due to file permissions (`chmod 000`), simulating a software virus or lockout.
