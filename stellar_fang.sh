@@ -3,7 +3,7 @@
 # --- Main Game Script: stellar_fang.sh ---
 
 # Get the absolute path of the directory where this script is located
-export SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+export SF_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 # Source the configuration and helper scripts
 source setup.sh
@@ -65,6 +65,34 @@ handle_time_up() {
 handle_win() {
     echo -e "\n\n*** CONGRATULATIONS! ***"
     echo "You successfully repaired the $DAMAGED_PART. The ship is safe!"
+    cat << "EOF"
+    
+ /\/\/\                            /  \
+| \  / |                         /      \
+|  \/  |                       /          \
+|  /\  |----------------------|     /\     |
+| /  \ |                      |    /  \    |
+|/    \|                      |   /    \   |
+|\    /|                      |  | (  ) |  |
+| \  / |                      |  | (  ) |  |
+|  \/  |                 /\   |  |      |  |   /\
+|  /\  |                /  \  |  |      |  |  /  \
+| /  \ |               |----| |  |      |  | |----|
+|/    \|---------------|    | | /|   .  |\ | |    |
+|\    /|               |    | /  |   .  |  \ |    |             
+| \  / |               |    /    |   .  |    \    |
+|  \/  |               |  /      |   .  |      \  |
+|  /\  |---------------|/        |   .  |        \|
+| /  \ |              /  STELLAR |   .  |  FANG    \
+|/    \|              (          |      |           )
+|/\/\/\|               |    | |--|      |--| |    |
+------------------------/  \-----/  \/  \-----/  \--------
+                        \\//     \\//\\//     \\//
+                         \/       \/  \/       \/
+
+
+EOF
+
     cleanup_game
     exit 0
 }
@@ -73,6 +101,19 @@ handle_win() {
 handle_bailout() {
     echo -e "\n\n*** BAIL-OUT SUCCESSFUL ***"
     echo "You escaped the ship, but the Stellar Fang is lost. You survived, but the mission failed."
+    cat << "EOF"
+
+          /  \
+         /    \
+        /      \
+    ---/--------\---
+   (    BOOM!     )
+    ---\--------/---
+        \      /
+         \    /
+          \  /
+
+EOF
     cleanup_game
     exit 0
 }
@@ -80,7 +121,7 @@ handle_bailout() {
 # Set traps for user-defined signals
 trap 'handle_time_up' USR1
 trap 'handle_win' USR2
-trap 'handle_bailout' TERM
+trap 'handle_bailout' SIGINT
 
 # --- Main Game Loop ---
 while true; do
@@ -100,16 +141,16 @@ while true; do
             current_dir=$(pwd)
 
             # Check if the current directory is EXACTLY the script's home directory
-            if [[ "$current_dir" == "$SCRIPT_DIR" ]]; then
+            if [[ "$current_dir" == "$SF_DIR" ]]; then
                 echo "Aborting mission... Goodbye."
                 break
             else
-                echo -e "\033[1;31mError: You can only exit the game from the main hub ('$SCRIPT_DIR').\033[0m"
+                echo -e "\033[1;31mError: You can only exit the game from the main hub ('$SF_DIR').\033[0m"
             fi
             ;;
         help)
             echo -e "\033[36mShowing help information...\033[0m"
-            cat docs/help.txt
+            cat $SF_DIR/docs/help.txt
             ;;
         time)
             CURRENT_TIME=$(date +%s)

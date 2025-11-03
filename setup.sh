@@ -64,7 +64,7 @@ setup_game() {
     echo -e "..\n..\n\033[1;31mALERT: VIRUS KILLED! The Emergency Repair Protocol is now available.\033[0m"
 
     # Create and populate the repair_protocol.sh file in the main ship directory
-    cat > "$SCRIPT_DIR/repair_protocol.sh" << EOF
+    cat > "$SF_DIR/repair_protocol.sh" << EOF
 #!/usr/bin/env bash
 
 source setup.sh
@@ -199,30 +199,35 @@ EOF
 
     done
 
-    # Clue #2: The manifest file leading to the repair kit
-    echo "Repair kit location logged as: $SPACESHIP_DIR/storage/hidden_depot" > "$SPACESHIP_DIR/storage/archives/manifesto.log"
-
-    # 5. Create the repair kit and the "virus" puzzle
-    # The final script the player must run to win
-    echo "#!/bin/bash" > "$SPACESHIP_DIR/storage/hidden_depot/repair_protocol.sh"
-    echo "echo 'Repair sequence initiated... Success!'" >> "$SPACESHIP_DIR/storage/hidden_depot/repair_protocol.sh"
-    echo "touch \"$SPACESHIP_DIR/$DAMAGED_PART/repaired\"" >> "$SPACESHIP_DIR/storage/hidden_depot/repair_protocol.sh"
-    # The "virus" simulation: make the script inaccessible
-    chmod 000 "$SPACESHIP_DIR/storage/hidden_depot/repair_protocol.sh"
-
-    # 6. Create the files for the "Bail-Out" alternate ending
+    # 5. Create the files for the "Bail-Out" alternate ending
     # The instruction file for bailing out
     echo "Bail-out procedure: To jettison the hatch, you must first disable the safety locks." > "$SPACESHIP_DIR/Orbiter/Safety_Hatches/bailout_protocol.txt"
     echo "To do this, make 'initiate_bailout.sh' executable and run it." >> "$SPACESHIP_DIR/Orbiter/Safety_Hatches/bailout_protocol.txt"
 
-    # The bail-out script itself, which is initially locked
-    echo "#!/bin/bash" > "$SPACESHIP_DIR/Orbiter/Safety_Hatches/initiate_bailout.sh"
-    echo "echo 'Safety locks disengaged. Hatch jettisoned. You are clear...'" >> "$SPACESHIP_DIR/Orbiter/Safety_Hatches/initiate_bailout.sh"
-    echo "touch \"$SPACESHIP_DIR/Orbiter/Safety_Hatches/bailed_out\"" >> "$SPACESHIP_DIR/Orbiter/Safety_Hatches/initiate_bailout.sh"
-    # Lock the bail-out script
-    chmod 000 "$SPACESHIP_DIR/Orbiter/Safety_Hatches/initiate_bailout.sh"
+    
+    # The bail-out script itself, which sends the SIGINT signal to the main game process
+    cat > "$SPACESHIP_DIR/Orbiter/Safety_Hatches/initiate_bailout.sh" << "EOF"
+#!/usr/bin/env bash
 
-    # 7. Set the player's starting location
+source stellar_fang.sh
+
+# This script initiates the emergency bail-out sequence.
+
+echo "Disabling safety locks and jettisoning the escape hatch..."
+sleep 2
+
+# Find the main game process ID from the sf.pid file
+# The 'readlink -f' ensures we find the file even if this script is run from a different directory
+pid_file=$SF_DIR/docs/sf.pid
+
+if [ -f "$pid_file" ]; then
+    main_pid=$(cat "$pid_file")
+    # Send the SIGINT signal to trigger the 'handle_bailout' function in the main game
+    kill -SIGINT "$main_pid"
+else
+    echo "Error: Could not locate the main ship computer (sf.pid). Bailout failed."
+fi
+EOF
 
     echo ">>> Spaceship ready."
 

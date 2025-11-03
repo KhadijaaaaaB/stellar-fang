@@ -8,14 +8,15 @@ cleanup_game() {
     rm -f "$EMERGENCY_REPAIR_GUIDE"
     rm -f "repair_protocol.sh" || true
 
-    if [ -f ship_sync.pid ]; then
-        sync_pid=$(cat ship_sync.pid)
-        
+    if [ -f docs/ship_sync.pid ]; then       
         # Kill the specific process and suppress the "Killed" message
-        kill "$sync_pid" > /dev/null 2>&1
-        wait "$sync_pid" 2>/dev/null
-        
-        rm ship_sync.pid
+        kill $(cat docs/ship_sync.pid) > /dev/null 2>&1 || true
+        rm -f docs/ship_sync.pid
+    fi
+
+    if [ -f docs/timer.pid ]; then
+      kill $(cat docs/timer.pid) 2>/dev/null || true
+      rm -f docs/timer.pid
     fi
 
     pkill -9 -f ship_sync.sh 2>/dev/null || true
