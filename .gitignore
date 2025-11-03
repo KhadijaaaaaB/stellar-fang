@@ -4,3 +4,4 @@ EMERGENCY_REPAIR_GUIDE
 docs/timer.pid
 docs/sf.pid
 docs/ship_sync.pid
+repair_protocol.sh

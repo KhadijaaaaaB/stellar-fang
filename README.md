@@ -9,31 +9,30 @@ Stellar Fang is a terminal-based game that simulates a high-stakes scenario aboa
 
 ### Objective
 
-Your primary goal is to identify the damaged ship component, find the necessary repair tools, and execute the repair sequence to save the V.S.S. Stellar Fang. The mission is time-sensitive, and failure to act quickly will result in the loss of the ship.
+Your primary goal is to identify the damaged ship component, locate the necessary replacement parts, and execute the repair sequence to save the V.S.S. Stellar Fang. The mission is time-sensitive; failing to act quickly will result in the loss of the ship.
 
 ### How to Play
 
 
 ![Spaceship](spaceship.png)
 
-The game unfolds through a series of logical steps that require you to use your knowledge of terminal commands :
+The game unfolds through a series of logical steps requiring you to use terminal commands to navigate and interact with the ship's systems:
 
 1. **Diagnosis:** Begin by exploring the ship's file system using `ls` and `cd`. 
-There are in total 4 `status.txt` files in different system directories. Find and read them to find the one reporting a critical error. 
-The only 4 parts of the ship that can be damaged are the ones highlighted in the figure above.
-2. **Investigation:** The error message will tell you which components of the broken system need to be replaced. These components are located in the ship's archives. You have to follow the EMERGENCY_REPAIR_GUIDE to repair the parts.
-3. **The Puzzle:** Oh no... a virus is preventing you from repairing the spaceship (it's hiding repair_protocol.sh). Identify it, then kill it! 
+4 critical systems have a `status.txt` file. Find and read them to find the one reporting a critical error. (see figure above for at-risk parts)
+2. **Investigation:** The error message will tell you which components of the broken system need to be replaced. These components are located in the ship's `Storage`. You have to follow the EMERGENCY_REPAIR_GUIDE to repair the parts.
+3. **The Puzzle:** Oh no... a virus is preventing you from repairing the spaceship (it's hiding repair_protocol.sh). The virus is running in the background. Identify it, then kill it! (use `ps` and `kill`) 
 Once the virus is killed, the repair script should appear.
 4. **Repair the ship:** You will find that the repair script, `repairprotocol.sh`, is locked due to file permissions. Unlock it.
-5. **Resolution:** Execute the script (`./repairprotocol.sh`) to repair the ship and win the game.
+5. **Resolution:** Execute the repair script (`./repairprotocol.sh`) to repair the ship and win the game.
 
 ### Outcomes
 
 There are three possible outcomes based on your actions :
 
-* **Ideal Win:** You successfully repair the ship before the timer runs out.
-* **Alternate Outcome:** If you feel you can't fix the ship in time, you can find the Safety Hatches and initiate a bail-out sequence, saving yourself but sacrificing the ship. You can bail out from the Safety Hatches, located in the Orbiter within the ship.
-* **Loss:** The timer expires before you can save the ship or yourself.
+* **Mission SUCCESS:** You successfully repair the ship before the timer runs out.
+* **Bail Out:** If you cannot fix the ship in time, you can find the Safety Hatches in the Orbiter, make `initiatebailout.sh` executable, and run it to save yourself while the ship is lost.
+* **Mission FAILURE:** The timer expires before you can save the ship or yourself.
 
 
 ## Getting Started
@@ -87,9 +86,15 @@ The project is organized into a modular structure for clarity and manageability 
 
 | File | Description |
 | :-- | :-- |
-| `stellarfang.sh` | The main executable script. It contains the game loop, parses command-line arguments, and manages the overall game state. |
-| `setup.sh` | Handles the creation of the game world. It randomly selects a damaged part and builds the directory structure and clue files. |
-| `timer.sh` | Manages the countdown timer based on the selected difficulty. It creates a `TIMEUPFILE` when the timer expires. |
-| `cleanup.sh` | Resets the environment after the game ends. It kills the timer process and removes the game directory. |
+| `stellar_fang.sh` | The main game engine. It initializes the game, handles command-line arguments, manages the primary game loop, and processes user input. It also traps signals for win, loss, and bail-out conditions to end the game appropriately. |
+| `setup.sh` | The world builder. This script runs at the start of the game to create the ship's directory structure, randomly select a damaged component, create status files and clues, and generate the bail-out and repair protocol scripts. It also launches the `ship_sync.sh` "virus" process.|
+| `timer.sh` | Manages the countdown timer. It runs as a background process, and upon completion, sends a USR1 signal to the main script to trigger the "time up" sequence.|
+| `cleanup.sh` | Resets the game environment. It kills any lingering background processes (like the timer) and removes all generated game files and directories, ensuring a clean state for the next playthrough.|
 | `docs/help.txt` | A text file containing a list of allowed commands and a brief overview of the game's objective. |
+| `ship_sync.sh` | Acts as a puzzle element (the "virus"). This lightweight script runs in the background, and the player must find and terminate its process to unlock the `repair_protocol.sh` script. |
+| `repair_protocol.sh` | This script is generated by setup.sh after the player "kills" the virus. When executed, it runs check_parts.sh and, if successful, sends the USR2 (win) signal to the main game script. |
+| `check_parts.sh` | A utility script called by repair_protocol.sh. It verifies that the player has moved the correct replacement parts into the forrepair directory before allowing the final repair to proceed. |
+
+
+
 
