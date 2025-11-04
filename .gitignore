@@ -1,7 +1,5 @@
 stellar_fang_ship
 stellar_fang_time_up
 EMERGENCY_REPAIR_GUIDE
-docs/timer.pid
-docs/sf.pid
-docs/ship_sync.pid
+pids/
 repair_protocol.sh

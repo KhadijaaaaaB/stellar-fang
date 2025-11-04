@@ -1,26 +1,21 @@
 #!/usr/bin/env bash
-
+export end_game=false
 cleanup_game() {
     echo "Cleaning up the environment..."
 
     rm -rf "$SPACESHIP_DIR"
     rm -f "$TIME_UP_FILE"
-    rm -f "$EMERGENCY_REPAIR_GUIDE"
     rm -f "repair_protocol.sh" || true
 
-    if [ -f docs/ship_sync.pid ]; then       
-        # Kill the specific process and suppress the "Killed" message
-        kill $(cat docs/ship_sync.pid) > /dev/null 2>&1 || true
-        rm -f docs/ship_sync.pid
-    fi
-
-    if [ -f docs/timer.pid ]; then
-      kill $(cat docs/timer.pid) 2>/dev/null || true
-      rm -f docs/timer.pid
-    fi
+    kill $(cat pids/ship_sync.pid) || true
+    kill $(cat pids/timer.pid) || true
+    rm -r pids || true
  
-    rm -f docs/sf.pid || true 
-
     pkill -9 -f ship_sync.sh 2>/dev/null || true #to ensure no residue process remains
     echo "Cleanup complete"  
+    
+    rm -f "repair_protocol.sh" || true #in case it was created after ship_sync.sh ended
+    if $end_game; then
+      pkill -9 -f "stellar_fang.sh" > /dev/null 2>&1 || true
+    fi
 }

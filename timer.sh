@@ -28,16 +28,10 @@ start_timer() {
     # Record the start time (
     START_TIME=$(date +%s)
     export START_TIME
-
-    if [ ! -z "$TIMER_PID" ] && kill -0 "$TIMER_PID" 2>/dev/null; then
-        kill "$TIMER_PID"
-    fi
     
     # Run the timer in the background. When it finishes, it creates the time-up file.
-    (sleep $GAME_DURATION && touch "$TIME_UP_FILE" && kill -USR1 "$(cat docs/sf.pid)") &   
-    
-    # Export the timer's Process ID so the main script can stop it if needed.
-    TIMER_PID=$!
-    export TIMER_PID
-    echo $TIMER_PID > docs/timer.pid
+    (sleep $GAME_DURATION &
+    echo $! > pids/timer.pid 
+    wait $! 
+    touch "$TIME_UP_FILE" && kill -USR1 "$(cat pids/sf.pid)") &   
 }

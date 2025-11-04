@@ -1,55 +1,58 @@
-Authorized Commands
+================================================================
+                       STELLAR FANG - HELP
+================================================================
 
-Use the following commands to interact with the ship's systems.
+A critical system has failed. Use the commands below to navigate
+the ship's systems, diagnose the problem, and perform repairs
+before the mission timer runs out.
 
-    ls - List Contents
+-------------------- FILE & DIRECTORY COMMANDS -------------------
 
-        Lists the files and directories in your current location.
-        Usage: ls [directory]
+  ls              List contents of your current location.
+                  Usage: ls [directory]
 
-    cd - Change Directory
+  cd              Change directory to navigate the ship.
+                  Usage: cd <directory_name>
 
-        Navigates between directories (the ship's systems).
-        Usage: cd <directory_name> or cd .. to go up one level.
+  cat             View the contents of a file (e.g., status reports).
+                  Usage: cat <filename>
+                  Hint : you should read multiple files at a time (cat 'file1' 'file2' 'file3')
 
-    cat - View File Contents
+  find            Search for files by name.
+                  Usage: find -name "<filename>"
 
-        Displays the content of a file. Use this to read status reports and log files.
-        Usage: cat <filename>
+  grep            Search for specific text inside a file.
+                  Usage: grep "<text>" <filename>
 
-    grep - Search Text
+  mv              Move or rename a file or directory.
+                  Usage: mv <source> <destination>
 
-        Searches for specific text inside a file. Useful for finding keywords in logs.
-        Usage: grep "<text_to_find>" <filename>
+  mkdir           Create a new directory to organize findings.
+                  Usage: mkdir <directory_name>
 
-    find - Find Files
+----------------------- SYSTEM & PROCESS COMMANDS ----------------------
+  
+  pwd             Print the current working directory. Can be useful to find where to move folders.
+                  Usage: pwd
 
-        Searches for files by name within the ship's systems.
-        Usage: find . -name "<filename>"
+  ps T            List all running processes to find anomalies.
+                  Usage: ps T
 
-    mkdir - Make Directory
+  kill            Terminate a process by its Process ID (PID).
+                  Usage: kill <PID>
 
-        Creates a new directory. You can use this to organize your findings.
-        Usage: mkdir <directory_name>
+  chmod           Change a file's permissions (e.g., to make a script executable).
+                  Usage: chmod +x <script.sh>
 
-    mv - Move or Rename
+  man             Print manual of the command. In case of doubt just use man.
+                  Usage : man <command>
+                  
+-------------------------- GAME COMMANDS ---------------------------
 
-        Moves or renames a file or directory.
-        Usage: mv <source> <destination>
+  time            Check the remaining time on your mission timer.
 
-    chmod - Change Permissions
+  help            Display this help message.
 
-        Changes the access permissions of a file. You may need this to run a locked repair script.
-        Usage: chmod <permissions> <filename> (e.g., chmod +x script.sh)
+  exit            Exit the simulation (only works from the main hub).
 
-    ps - List Processes
-
-        Lists currently running processes. Useful for monitoring ship system diagnostics.
-        Usage: ps T 
-
-    kill - Terminate Process
-    
-        Stops a running process identified by its Process ID (PID). Use with caution.
-        Usage: kill <PID>
-
-    time - Show remaining time for the mission
+================================================================

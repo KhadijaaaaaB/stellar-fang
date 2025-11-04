@@ -1,0 +1,52 @@
+================================================================
+                      HOW TO PLAY STELLAR FANG
+================================================================
+
+Your mission is to find and repair a critical system failure on
+the V.S.S. Stellar Fang before time runs out. Follow these
+steps to save the ship.
+
+----------------------------------------------------------------
+
+1. >> DIAGNOSE THE FAILURE
+
+   Use 'ls' and 'cd' to explore the ship's four main systems.
+   Each system contains a 'status.txt' file. Find the one that
+   reports a CRITICAL ERROR to identify the broken part.
+
+----------------------------------------------------------------
+
+2. >> GATHER REPAIR PARTS
+
+   Read the error message in the status file to see which parts
+   are needed. Then, find the 'EMERGENCY_REPAIR_GUIDE' and
+   follow its instructions to locate the replacement parts in
+   the 'Storage' archives and move them to the correct
+   'forrepair' directory.
+
+----------------------------------------------------------------
+
+3. >> NEUTRALIZE THE VIRUS
+
+   A hidden background process (a "virus") is preventing the
+   final repair script from appearing. Use 'ps T' to find this
+   rogue process and 'kill <PID>' to terminate it. Once the
+   virus is gone, 'repair_protocol.sh' will be accessible.
+
+----------------------------------------------------------------
+
+4. >> PREPARE THE REPAIR SCRIPT
+
+   The 'repair_protocol.sh' script is locked by default. You
+   must use 'chmod +x repair_protocol.sh' to make it
+   executable before you can run it.
+
+----------------------------------------------------------------
+
+5. >> EXECUTE THE REPAIR
+
+   Run './repair_protocol.sh' to fix the ship's systems. If
+   all steps were completed correctly, you will save the
+   Stellar Fang and win the game.
+
+================================================================

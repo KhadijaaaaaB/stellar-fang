@@ -18,10 +18,10 @@ Your primary goal is to identify the damaged ship component, locate the necessar
 
 The game unfolds through a series of logical steps requiring you to use terminal commands to navigate and interact with the ship's systems:
 
-1. **Diagnosis:** Begin by exploring the ship's file system using `ls` and `cd`. 
+1. **Diagnosis:** Begin by exploring the ship's file system by entering `stellar_fang_ship` using `ls` and `cd`. 
 4 critical systems have a `status.txt` file. Find and read them to find the one reporting a critical error. (see figure above for at-risk parts)
-2. **Investigation:** The error message will tell you which components of the broken system need to be replaced. These components are located in the ship's `Storage`. You have to follow the EMERGENCY_REPAIR_GUIDE to repair the parts.
-3. **The Puzzle:** Oh no... a virus is preventing you from repairing the spaceship (it's hiding repair_protocol.sh). The virus is running in the background. Identify it, then kill it! (use `ps` and `kill`) 
+2. **Bring the repair parts:** The error message will tell you which components of the broken system need to be replaced. These components are located in the ship's `Storage`. You have to follow the EMERGENCY_REPAIR_GUIDE to repair the parts.
+3. **Neutralize the virus:** Oh no... a virus is preventing you from repairing the spaceship (it's hiding repair_protocol.sh). The virus is running in the background. Identify it, then kill it! (use `ps` and `kill`) 
 Once the virus is killed, the repair script should appear.
 4. **Repair the ship:** You will find that the repair script, `repairprotocol.sh`, is locked due to file permissions. Unlock it.
 5. **Resolution:** Execute the repair script (`./repairprotocol.sh`) to repair the ship and win the game.
@@ -77,7 +77,8 @@ Run the game by executing the main script. You can specify a difficulty level us
 * **Hard Mode:** 10-minute timer.
 The player can check the timer any time by typing `time` on the terminal.
 
-To see a list of authorized commands and a brief explanation of the game's objective, type `help`.
+To see a list of useful commands, type `help`.
+For a recap of the game's objective and steps, type `gameplay`.
 
 ## Project Structure
 
@@ -96,18 +97,31 @@ The project is organized into a modular structure for clarity and manageability 
 | `check_parts.sh` | A utility script called by repair_protocol.sh. It verifies that the player has moved the correct replacement parts into the forrepair directory before allowing the final repair to proceed. |
 
 ## All you need to know about this project
-### Coding choices/strategies
-To enhance game immersion, and feel truly like you've entered a game where you are in a specific environment, it was decided to implement this game in a simulated terminal created in the `stellar_fang.sh` script. 
+### Command Handling and the Simulated Terminal
 
-At first, it was decided that only specific commands would be allowed (most of them are in `docs/help.txt`). This was done in the "case" block, where it would only allow specific commands and reject others.
+A core design goal for *Stellar Fang* was to create an immersive experience by simulating a self-contained terminal environment directly within the main `stellar_fang.sh` script.
 
-I quickly came to the realization however that this was too limiting for the player. So I wanted to allow all bash commands. Which is why, by research, the "eval" command was found and used instead (`eval "$user_input" || true`).
-To handle errors and impromptu game-exits, " || true " was used to ensure that the player doesn't quit the game in case of error in the command. The error will simply be displayed in the simulated terminal like it would be on the real one.
+The initial approach to command handling involved creating a strict whitelist of commands. This was managed through a `case` block in the script, which would explicitly check user input against a list of approved commands (like `ls`, `cd`, `cat`, etc.) and reject all others.
 
-### Improvement
-This project was made in a short period of time. Hence, many aspects of it need improvement to make it noob-proof. 
-- First there needs to be a better management of cleanup of processes. About processes, if the player does not exit the game the regular way (by going in the game's main folder and typing exit), there might be some residue of old processes (for instance sleep 1200 which is the process responsible for the game's duration)
-- A similar problem happens with files, which are not always correctly deleted when the player exits by closing the terminal or by doing Ctrl C.
-- It would also be nice to manage a bit better the file system by putting all `.pid` files in a `pid` folder instead of in `docs`. That folder should be created whenever a `.pid` is created and deleted whenever the game is cleaned up.
-- Bug with `repair_protocol.sh` : the file is set to appear when the fake-virus process `ship_sync.sh` is killed. If however the player does not kill the process, and exits the game or looses, the process `ship_sync.Sh` will be killed by `cleanup_sh` thus creating the `repair_protocol.sh` after the game is finished. This bug has not been fixed in its core, but the `repair_protocol.sh` file gets deleted in the case where it is created after the game ends (see last lines of `stellar_fang.sh`).
+However, it quickly became apparent that this method was too restrictive. It broke the illusion of a real terminal by preventing the player from using the full range of creative and powerful tools that a standard Bash environment provides (e.g., `grep`, `find`, `mv`).
+
+To address this while maintaining control over the game's flow, the command handler was redesigned. The new implementation uses a wildcard pattern in the `case` block to catch any command not explicitly handled by the game logic:
+> $user_input || true
+
+By executing `$user_input` directly, the game now allows players to use any valid Bash command. The addition of `|| true` is a crucial error-handling mechanism. It ensures that if a user types a command that fails or produces an error, the script will not exit. The error is simply displayed in the simulated terminal—just as it would be in a real one—and the game continues, preserving the player's immersion.
+
+
+### Project Status and Future Enhancements
+This game was developed as a rapid prototype. While fully playable, there are several areas for improvement to enhance robustness, user experience, and replayability.
+#### Known Issues & Areas for Improvement
+- *Process and File Cleanup:* The game relies on a `cleanup.sh` script to remove temporary files and stop background processes. While calling the script when the player exits the game from the main hub helps ensure this runs, abruptly closing the terminal window (e.g., with Alt+F4) can still leave orphaned processes or game files behind. The cleanup mechanism could be made more resilient.
+- *Ctrl+C Exploit:* Pressing `Ctrl+C` currently triggers the "bailout" sequence, offering an unintended shortcut. This `SIGINT` signal should ideally be trapped to either be ignored or to display a message without ending the game.
+- *Late `repair_protocol.sh` Creation:* The `repair_protocol.sh` file is designed to appear only after the `ship_sync.sh` "virus" process is killed. If the game ends before the player kills this process, the main cleanup script terminates it, causing the repair file to appear after the game is over. A temporary patch deletes this file during cleanup (see last lines of `cleanup.sh`), but a more robust solution would prevent its creation in the first place if the game has already concluded.
+- *Centralized Game Configuration:* Key game data, such as the list of repairable components, is currently defined in multiple scripts (`setup.sh` and `check_parts.sh`). This data should be centralized into a single `config.sh` file to avoid redundancy and make the game easier to maintain and expand.
+#### Roadmap for future versions
+- *Enhanced Usability:* The `EMERGENCY_REPAIR_GUIDE` is a critical document, but it's currently a file the player must find and `cat`. This could be improved by making it available via a simple `repair_guide` command, similar to the existing `help` and `gameplay` commands.
+- *Increased Replayability and Difficulty:* The game isn't very long, and once you know how to play it you don't really need to use much brain to play it again. A way to improve this would be to add difficulty by introducing more variety and challenge by adding new, randomized scenarios. Here are some examples.
+    - Oxygen Leak Scenario: The player must locate a leak in the liquid oxygen tank, find the correct tools in storage, and write a small patch script to seal it.
+    - *OMS Stabilization Mini-Game:* An Orbital Maneuvering System (OMS) failure could require the player to navigate to the piloting center and play a terminal-based "mini-game" to re-stabilize the ship's orientation.
+    > A way to implement this last improvement is through scenarios. On `stellar_fang.sh`, it is possible to make `case '$SCENARIO"` blocks for each of the problem in the spaceship.
 

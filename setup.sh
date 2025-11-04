@@ -49,19 +49,19 @@ ALL_SHIP_PARTS=(
 # --- Setup Function ---
 setup_game() {
     cleanup_game
+    mkdir pids 2>/dev/null || true
+
+    # Start the ship synchronization process (virus) in the background
     sh ship_sync.sh &
     sync_pid=$!
-    echo $sync_pid > docs/ship_sync.pid
+    echo $sync_pid > pids/ship_sync.pid
     (
-    # This loop runs as long as the process with $sync_pid is alive
-    while ps -p $sync_pid > /dev/null; do
+    while ps -p $sync_pid > /dev/null; do #as long as ship_sync.sh is running, sleep
         sleep 1
     done
 
     # --- This code runs ONLY AFTER ship_sync.sh has been killed ---
-    
-    # Notify the user that something has happened
-    echo -e "..\n..\n\033[1;31mALERT: VIRUS KILLED! The Emergency Repair Protocol is now available.\033[0m"
+    echo -e "..\n\033[1;31mALERT: VIRUS KILLED! The Emergency Repair Protocol is now available.\033[0m"
 
     # Create and populate the repair_protocol.sh file in the main ship directory
     cat > "$SF_DIR/repair_protocol.sh" << EOF
@@ -80,7 +80,7 @@ if [ \$result -eq 0 ]; then
     touch "\$SPACESHIP_DIR/\$DAMAGED_PART/repaired"
 
     # Send USR2 (win) signal to main game script
-    kill -USR2 "\$(cat docs/sf.pid)"
+    kill -USR2 "\$(cat pids/sf.pid)"
 else    
     echo "Repair parts missing or invalid. Cannot proceed with repair."
     exit 1
@@ -88,15 +88,14 @@ fi
 
 EOF
 
-) &  # The final '&' runs this entire watcher block in the background.
+) &  # '&' runs this entire watcher block in the background.
 
     echo ">>> Loading Spaceship..."
 
-    # 1. Create spaceship folder
+    ### Create spaceship folder
     mkdir "$SPACESHIP_DIR"
 
-    #Create Emergency System Repair Guide
-    # Create Emergency System Repair Guide with clearer instructions
+    # Create Emergency System Repair Guide file
     cat > "$SPACESHIP_DIR/EMERGENCY_REPAIR_GUIDE" << EOF 
 ================= EMERGENCY SYSTEM REPAIR GUIDE =================
 Repair Procedure:
@@ -112,7 +111,7 @@ Repair Procedure:
 ================================================================
 EOF
 
-    # 2. Build the ship's directory structure
+    ### Build the ship's directory structure
     for category in "${SHIP_CATEGORIES[@]}"; do
         mkdir -p "$SPACESHIP_DIR/$category"
     done
@@ -120,8 +119,6 @@ EOF
     for part in "${ALL_SHIP_PARTS[@]}"; do
         mkdir -p "$SPACESHIP_DIR/$part"
     done
-
-    mkdir -p "$SPACESHIP_DIR/storage/archives"
 
     mkdir -p "$SPACESHIP_DIR/storage/hidden_depot"
     mkdir -p "$SPACESHIP_DIR/storage/avionics/RCSBACKUPMODULES"
@@ -156,50 +153,49 @@ EOF
     touch $SPACESHIP_DIR/storage/navdata/deorbitburnsequence.script
     touch $SPACESHIP_DIR/storage/navdata/enginegimbalconfig.ini
 
-    # 3. Randomly select the damaged part for this session
+    ## Randomly select the damaged part for this session
     DAMAGED_PART=${POSSIBLE_DAMAGED_PARTS[$((RANDOM % ${#POSSIBLE_DAMAGED_PARTS[@]}))]}
     export DAMAGED_PART # Make it available to the main script
 
-    # 4. Create status files for all critical systems
-    #    This loop creates a "status.txt" in each of the four possible failure points.
+    ### Create status files for all critical systems
+    ## This loop creates a "status.txt" in each of the four possible failure points.
     for part in "${POSSIBLE_DAMAGED_PARTS[@]}"; do
-        # Check if the current part in the loop is the one we selected as damaged
         echo "System Status: OK. All systems nominal." > "$SPACESHIP_DIR/$part/status.txt"
-        # This is the broken part. Create the error message and the first clue.
         
-        STATUS_FILE="$SPACESHIP_DIR/$DAMAGED_PART/status.txt"
-        echo "ALERT: Critical failure detected in '$DAMAGED_PART'." > "$STATUS_FILE"
-        echo "|| /!\ Please refer to the Emergency System Repair Guide /!\ || " >> "$STATUS_FILE"
-        echo "" >> "$STATUS_FILE"
-        echo "Parts requiring replacement:" >> "$STATUS_FILE"
+        # If this is the damaged part, modify its status file to indicate failure
+        DAMAGED_STATUS="$SPACESHIP_DIR/$DAMAGED_PART/status.txt"
+        echo "ALERT: Critical failure detected in '$DAMAGED_PART'." > "$DAMAGED_STATUS"
+        echo "|| /!\ Please refer to the Emergency System Repair Guide /!\ || " >> "$DAMAGED_STATUS"
+        echo "" >> "$DAMAGED_STATUS"
+        echo "Parts requiring replacement:" >> "$DAMAGED_STATUS"
 
         # Determine which part failed and list missing components
         case "$DAMAGED_PART" in
             "Orbiter/Nose_Reaction_Control_System")
                 for file in "${RCS_repair[@]}"; do
-                    echo "- $file" >> "$STATUS_FILE"
+                    echo "- $file" >> "$DAMAGED_STATUS"
                 done
                 ;;
             "Main_Engine")
                 for file in "${MainEngine_repair[@]}"; do
-                    echo "- $file" >> "$STATUS_FILE"
+                    echo "- $file" >> "$DAMAGED_STATUS"
                 done
                 ;;
             "External_Tank/Liquid_Oxygen_Tank")
                 for file in "${ExternalTank_repair[@]}"; do
-                    echo "- $file" >> "$STATUS_FILE"
+                    echo "- $file" >> "$DAMAGED_STATUS"
                 done
                 ;;
             "OMS")
                 for file in "${OMS_repair[@]}"; do
-                    echo "- $file" >> "$STATUS_FILE"
+                    echo "- $file" >> "$DAMAGED_STATUS"
                 done
                 ;;
         esac
 
     done
 
-    # 5. Create the files for the "Bail-Out" alternate ending
+    ### Create the files for the "Bail-Out" alternate ending
     # The instruction file for bailing out
     echo "Bail-out procedure: To jettison the hatch, you must first disable the safety locks." > "$SPACESHIP_DIR/Orbiter/Safety_Hatches/bailout_protocol.txt"
     echo "To do this, make 'initiate_bailout.sh' executable and run it." >> "$SPACESHIP_DIR/Orbiter/Safety_Hatches/bailout_protocol.txt"
@@ -218,7 +214,7 @@ sleep 2
 
 # Find the main game process ID from the sf.pid file
 # The 'readlink -f' ensures we find the file even if this script is run from a different directory
-pid_file=$SF_DIR/docs/sf.pid
+pid_file=$SF_DIR/pids/sf.pid
 
 if [ -f "$pid_file" ]; then
     main_pid=$(cat "$pid_file")
