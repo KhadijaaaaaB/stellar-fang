@@ -181,4 +181,6 @@ done
 
 # --- Cleanup ---
 cleanup_game 
+
+rm -f "repair_protocol.sh" || true
 pkill -9 -f "stellar_fang.sh" > /dev/null 2>&1 || true

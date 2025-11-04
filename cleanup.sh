@@ -18,8 +18,9 @@ cleanup_game() {
       kill $(cat docs/timer.pid) 2>/dev/null || true
       rm -f docs/timer.pid
     fi
+ 
+    rm -f docs/sf.pid || true 
 
-    pkill -9 -f ship_sync.sh 2>/dev/null || true
-
+    pkill -9 -f ship_sync.sh 2>/dev/null || true #to ensure no residue process remains
     echo "Cleanup complete"  
 }
