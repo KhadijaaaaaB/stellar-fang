@@ -19,9 +19,9 @@ Your primary goal is to identify the damaged ship component, locate the necessar
 The game unfolds through a series of logical steps requiring you to use terminal commands to navigate and interact with the ship's systems:
 
 1. **Diagnosis:** Begin by exploring the ship's file system by entering `stellar_fang_ship` using `ls` and `cd`. 
-4 critical systems have a `status.txt` file. Find and read them to find the one reporting a critical error. (see figure above for at-risk parts)
+4 critical systems have a `status.txt` file. Find and read them to find the one reporting a critical error (see figure above for at-risk parts).
 2. **Bring the repair parts:** The error message will tell you which components of the broken system need to be replaced. These components are located in the ship's `Storage`. You have to follow the EMERGENCY_REPAIR_GUIDE to repair the parts.
-3. **Neutralize the virus:** Oh no... a virus is preventing you from repairing the spaceship (it's hiding repair_protocol.sh). The virus is running in the background. Identify it, then kill it! (use `ps` and `kill`) 
+3. **Neutralize the virus:** Oh no... a virus is preventing you from repairing the spaceship (it's hiding repair_protocol.sh). The virus is running in the background. Identify it, then kill it! (use `ps` and `kill`). 
 Once the virus is killed, the repair script should appear.
 4. **Repair the ship:** You will find that the repair script, `repairprotocol.sh`, is locked due to file permissions. Unlock it.
 5. **Resolution:** Execute the repair script (`./repairprotocol.sh`) to repair the ship and win the game.
@@ -45,19 +45,13 @@ This game is designed to run in a Unix-like shell environment (like Linux or mac
 
 ### Installation
 
-1. Clone the repo
+1. Clone the repo and navigate into project directory
 
 ```sh
-git clone https://github.com/KhadijaaaaaB/stellar-fang.git
+git clone https://github.com/KhadijaaaaaB/stellar-fang.git && cd stellar-fang
 ```
 
-2. Navigate to the project directory
-
-```sh
-cd stellar-fang
-```
-
-3. Execute the main script to launch the game
+2. Execute the main script to launch the game
 
 ```sh
 ./stellar_fang.sh
@@ -69,7 +63,7 @@ cd stellar-fang
 Run the game by executing the main script. You can specify a difficulty level using the `--level` argument.
 
 ```sh
-./stellarfang.sh --level [easy|hard]
+./stellarfang.sh --level [easy|normal|hard]
 ```
 
 * **Easy Mode:** 30-minute timer.
@@ -101,11 +95,11 @@ The project is organized into a modular structure for clarity and manageability 
 
 A core design goal for *Stellar Fang* was to create an immersive experience by simulating a self-contained terminal environment directly within the main `stellar_fang.sh` script.
 
-The initial approach to command handling involved creating a strict whitelist of commands. This was managed through a `case` block in the script, which would explicitly check user input against a list of approved commands (like `ls`, `cd`, `cat`, etc.) and reject all others.
+The initial approach to command handling involved creating a strict whitelist of commands. This was managed through a `switch` block in the script, which would explicitly check user input against a list of approved commands (like `ls`, `cd`, `cat`, etc.) and reject all others.
 
 However, it quickly became apparent that this method was too restrictive. It broke the illusion of a real terminal by preventing the player from using the full range of creative and powerful tools that a standard Bash environment provides (e.g., `grep`, `find`, `mv`).
 
-To address this while maintaining control over the game's flow, the command handler was redesigned. The new implementation uses a wildcard pattern in the `case` block to catch any command not explicitly handled by the game logic:
+To address this while maintaining control over the game's flow, the command handler was redesigned. The new implementation uses a default statement in the switch block to catch any command not explicitly handled by the game logic:
 > $user_input || true
 
 By executing `$user_input` directly, the game now allows players to use any valid Bash command. The addition of `|| true` is a crucial error-handling mechanism. It ensures that if a user types a command that fails or produces an error, the script will not exit. The error is simply displayed in the simulated terminal—just as it would be in a real one—and the game continues, preserving the player's immersion.
@@ -115,8 +109,7 @@ By executing `$user_input` directly, the game now allows players to use any vali
 This game was developed as a rapid prototype. While fully playable, there are several areas for improvement to enhance robustness, user experience, and replayability.
 #### Known Issues & Areas for Improvement
 - *Process and File Cleanup:* The game relies on a `cleanup.sh` script to remove temporary files and stop background processes. While calling the script when the player exits the game from the main hub helps ensure this runs, abruptly closing the terminal window (e.g., with Alt+F4) can still leave orphaned processes or game files behind. The cleanup mechanism could be made more resilient.
-- *Ctrl+C Exploit:* Pressing `Ctrl+C` currently triggers the "bailout" sequence, offering an unintended shortcut. This `SIGINT` signal should ideally be trapped to either be ignored or to display a message without ending the game.
-- *Late `repair_protocol.sh` Creation:* The `repair_protocol.sh` file is designed to appear only after the `ship_sync.sh` "virus" process is killed. If the game ends before the player kills this process, the main cleanup script terminates it, causing the repair file to appear after the game is over. A temporary patch deletes this file during cleanup (see last lines of `cleanup.sh`), but a more robust solution would prevent its creation in the first place if the game has already concluded.
+- *Ctrl+C Exploit:* Pressing `Ctrl+C` currently triggers the "bailout" sequence, offering an unintended shortcut. This `SIGINT` signal should ideally be trapped (and actually is) to either be ignored or to display a message without ending the game. The SIGINT signals is trapped because it is sent by the initiate_bailout.sh script to trigger the bailout. Another non POSIX signal could be used instead, to free SIGINT for the described usage.
 - *Centralized Game Configuration:* Key game data, such as the list of repairable components, is currently defined in multiple scripts (`setup.sh` and `check_parts.sh`). This data should be centralized into a single `config.sh` file to avoid redundancy and make the game easier to maintain and expand.
 #### Roadmap for future versions
 - *Enhanced Usability:* The `EMERGENCY_REPAIR_GUIDE` is a critical document, but it's currently a file the player must find and `cat`. This could be improved by making it available via a simple `repair_guide` command, similar to the existing `help` and `gameplay` commands.
